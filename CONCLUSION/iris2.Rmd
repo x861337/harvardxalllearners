@@ -1,0 +1,342 @@
+---
+title: 'HarvardX -  PH125.9x - Data Science: Capstone - IDV Learners - all shiny files
+  on github'
+author: "Francis Angonesse"
+date: "6/8/2019"
+output:
+  pdf_document: default
+  html_document: default
+---
+<h1> The Iris Dataset</h2>
+The Iris dataset was used in R.A. Fisher's classic 1936 paper, The Use of Multiple Measurements in Taxonomic Problems, and can also be found on the UCI Machine Learning Repository.
+https://www.kaggle.com/uciml/iris/downloads/iris-species.zip/2
+
+<h1> 1 - Introduction</h2>
+
+The Iris dataset are composed by four features (length and width of sepals and petals) of 50 samples of three species of Iris (Iris setosa, Iris virginica and Iris versicolor)
+
+This meansuraments were used to create a linear discriminat model to help on classification and visualization of the dataset.
+
+We will follow the steps of:
+
+a) Loading "RAW" data
+b) Plot "raw data" - By not making very clear wichi species are on scope
+c) Use tidyverse and dplyr to clean data, through pipes and classify each species and variables
+d) Plot "clean" data of each species and show results
+e) Conclusion
+<h1> a) Loading "raw data"
+## Loading our libraries
+```{r message=FALSE}
+library(tidyverse)
+library(neuralnet)
+library(beanplot)
+library(MASS)
+library(shiny)
+library(dplyr)
+library(tidyr) 
+library(ggplot2)
+```
+## Load dataset and set colnames
+```{r}
+# define the filename
+filename <- "data-raw/iris.csv"
+# load the CSV file from the local directory
+dataset <- read.csv(filename, header = FALSE)
+# set the column names in the dataset
+colnames(dataset) <- c("Sepal.Length","Sepal.Width","Petal.Length","Petal.Width","Species")
+str(dataset)
+head(iris)
+```
+Lets analyze the data, filtering the 5 first rows of each class
+```{r}
+subset(iris, Species == "setosa")[1:5,]
+subset(iris, Species == "versicolor")[1:5,]
+subset(iris, Species == "virginica")[1:5,]
+```
+##Exploratory Data Analysis
+A quick look shows that Petal.Lenght of the class setosa is shorter than the present in other classes, lets check:
+```{r}
+subset(iris, Petal.Length < 2)[,"Species"]
+```
+This comproves our idea. Now lets move ahead and use some plots to help on the process of analysis.
+<h1>b) Boxplot on each Species</h1>
+This shows on a very clear way the Lenghts of each species
+Maximum: are close to 8
+Upper quartile: 25% of data freater than this value
+Median: 50% of data is greater than this value; middle of dataset
+Lower Quartile: 25% of data less than this value
+Minimum: Least value, excluding outliers
+link on how to read box plot
+<a target="_blank" rel="noopener noreferrer" href="https://flowingdata.com/2008/02/15/how-to-read-and-use-a-box-and-whisker-plot
+
+<h2>Here we can see each specie petals data very clear, and its very usefull to visualize our data.</h2>
+```{r}
+par(mar=c(7,5,1,1)) # more space to labels
+boxplot(iris,las=2)
+```
+```{r}
+irisVer <- subset(iris, Species == "versicolor")
+irisSet <- subset(iris, Species == "setosa")
+irisVir <- subset(iris, Species == "virginica")
+par(mfrow=c(1,3),mar=c(6,3,2,1))
+boxplot(irisVer[,1:4], main="Versicolor",ylim = c(0,8),las=2)
+boxplot(irisSet[,1:4], main="Setosa",ylim = c(0,8),las=2)
+boxplot(irisVir[,1:4], main="Virginica",ylim = c(0,8),las=2)
+```
+
+<h1>Setup and Train The Neural Network for Iris Dataset</h1>
+Neural Network emulates how the human brain works by having a network of neurons that are interconnected and sending stimulating signal to each other.
+
+In the Neural Network model, each neuron is equivalent to a logistic regression unit. Neurons are organized in multiple layers where every neuron at layer i connects out to every neuron at layer i+1 and nothing else.
+
+The tuning parameters in Neural network includes the number of hidden layers, number of neurons in each layer, as well as the learning rate.
+
+The learning happens via an iterative feedback mechanism where the error of training data output is used to adjusted the corresponding weights of input. This adjustment will be propagated back to previous layers and the learning algorithm is known as back-propagation.
+```{r}
+## Iris - Neural Network
+##
+iris$setosa <- iris$Species == "setosa"
+iris$virginica <- iris$Species == "virginica"
+iris$versicolor <- iris$Species == "versicolor"
+iris.train.idx <- sample(x = nrow(iris), size = nrow(iris)*0.5)
+iris.train <- iris[iris.train.idx,]
+iris.valid <- iris[-iris.train.idx,]
+```
+
+
+```{r}
+iris.net <- neuralnet(setosa+versicolor+virginica ~ 
+                        Sepal.Length + Sepal.Width + Petal.Length + Petal.Width, 
+                      data = iris.train, hidden = c(10,10), rep = 5, err.fct = "ce", 
+                      linear.output = F, lifesign = "minimal", stepmax = 1000000,
+                      threshold = 0.001)
+
+plot(iris.net, rep = "best")
+```
+```{r}
+
+```
+
+
+
+
+
+## Scatter Plot Matrices on Iris
+Iris data is used in the following examples. iris data set gives the measurements in centimeters of the variables sepal length and width, and petal length and width, respectively, for 50 flowers from each of 3 species of iris. The species are Iris setosa, versicolor, and virginica.
+
+Scatter Plot Matrices into R produces a scatterplot matrix of selected variables in our dataset. In this case, the variables "sepal length" and "width" and "petal length" and "width". The graphiuc function is pairs(). data set gives the measurements in cm of the variables sepal length and width and petal length and width, respectively, for 50 flowers from each of 3 species of iris. The species are Iris setosa, versicolor, and virginica).
+
+
+```{r}
+head(iris)
+```
+## R base scatter plot matrices: pairs()
+```{r}
+pairs(iris[,1:4], pch = 19)
+```
+
+
+```{r}
+pairs(iris[,1:4], pch = 19, lower.panel = NULL)
+```
+
+## Separate groups(species) by color points
+```{r}
+my_cols <- c("#00AFBB", "#E7B800", "#FC4E07")  
+pairs(iris[,1:4], pch = 19,  cex = 0.5,
+      col = my_cols[iris$Species],
+      lower.panel=NULL)
+```
+
+
+```{r}
+# Correlation panel
+panel.cor <- function(x, y){
+    usr <- par("usr"); on.exit(par(usr))
+    par(usr = c(0, 1, 0, 1))
+    r <- round(cor(x, y), digits=2)
+    txt <- paste0("R = ", r)
+    cex.cor <- 0.8/strwidth(txt)
+    text(0.5, 0.5, txt, cex = cex.cor * r)
+}
+```
+
+# Add correlations on the lower panels: The size of the text is proportional to the correlations.
+```{r}
+# Customize upper panel
+upper.panel<-function(x, y){
+  points(x,y, pch = 19, col = my_cols[iris$Species])
+}
+# Create the plots
+pairs(iris[,1:4], 
+      lower.panel = panel.cor,
+      upper.panel = upper.panel)
+```
+
+## Add correlations on the scatter plots:
+```{r}
+# Customize upper panel
+upper.panel<-function(x, y){
+  points(x,y, pch=19, col=c("red", "green3", "blue")[iris$Species])
+  r <- round(cor(x, y), digits=2)
+  txt <- paste0("R = ", r)
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(0, 1, 0, 1))
+  text(0.5, 0.9, txt)
+}
+pairs(iris[,1:4], lower.panel = NULL, 
+      upper.panel = upper.panel)
+```
+<h1>Use the R package psych</h1>
+The function pairs.panels [in psych package] can be also used to create a scatter plot of matrices, with bivariate scatter plots below the diagonal, histograms on the diagonal, and the Pearson correlation above the diagonal.
+
+
+
+
+```{r}
+library(psych)
+pairs.panels(iris[,-5], 
+             method = "pearson", # correlation method
+             hist.col = "#00AFBB",
+             density = TRUE,  # show density plots
+             ellipses = TRUE # show correlation ellipses
+             )
+```
+
+<h2>When creating histograms or barplots in ggplot2 we found that the data is placed at some distance from the x axis, which means the y axis starts below zero:</h2>
+
+
+
+
+
+
+```{r}
+library(tree)
+tree1 <- tree(Species
+~Sepal.Width +
+Petal.Width, data = iris)
+plot(tree1)
+text(tree1)
+```
+
+
+<h1> c) Cleaning data through pipes
+```{r}
+glimpse(iris)
+```
+<h2>The output shows 150 variables spread across 6 variables. 4 variable are numeric ones, and species are categorical. Lets move on.</h2>
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+head(iris, n = 10)
+```
+What we notice is that the first 4 variables capture Lemght and Witdth measurements for sepal and petal. We need to change to a more easy format. 
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+long_iris <- iris%>%
+  gather(part,value,Sepal.Length,Sepal.Width,Petal.Length ,Petal.Width)%>%
+  separate(part, c('part', 'measure'), sep = '\\.')
+```
+Now we can plot more precise graphics by showing the species, the data stills the same, we just removed some limitations of it original format.
+
+<h1> Data Cleaning</h1>
+
+```{r}
+sapply(long_iris, class)
+```
+Now we coerce character variables to R factors. This will be handy & facilitate ease of analysis.
+```{r}
+fcts <- c('part', 'measure')
+long_iris[fcts] <- lapply(long_iris[fcts], as.factor)
+sapply(long_iris, class)
+```
+Lets write a script that will loop over the entire data set to get a sum of each missing value of each variable
+```{r}
+Missing_d <- function(x){sum(is.na(x))/length(x)*100}
+```
+Lets apply to long_iris our missing_d
+```{r}
+apply(long_iris, 2, Missing_d)
+```
+Now we can see that are zero missing values
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+is_special <- function(x){
+  if(is.numeric(x)) !is.finite(x) else is.na(x)
+}
+
+```
+
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+sapply(long_iris, is_special)
+```
+
+
+By using the sapply() function it performs a check on variable numerics to see if theres some NA.
+```{r}
+sum(is.na(long_iris$value))
+```
+<h1> c) New long_iris dataset cleaned. We used some "pipes" to perform a change on the way it was formated, used a script to get rid of NA values.</h1>
+Now lets plot some awesome graphics with ggplot
+
+```{r}
+p <- ggplot(long_iris, aes(x = Species, y = value, col = part)) 
+p + geom_jitter(alpha = 0.4, size = 0.8) + facet_grid(.~ measure)
+```
+With our data cleaning, now we are able to show our species.
+
+```{r}
+p + geom_jitter(alpha = 0.3, size = 0.8) + stat_boxplot(alpha = 0.5) + facet_grid(.~ measure)
+```
+Remember our first box plot? now we dont need to guess from where some variable came from.
+
+```{r}
+p + geom_jitter(alpha = 0.5, size = 0.8) + stat_boxplot(alpha = 0.5) + facet_grid(.~ part)
+```
+<h1> Observations on each species/ Conclusion</h1>
+
+Setosa’s petal & sepal length are the shortest of the 3 species, their petals are the narrowest compared to the other 2 species but notice how their sepal is the widest of the 3. Versicolor and Virginica are similar in  length and width properties. Setosa has less petals but notice something interesting on his sepals, which shows more sepals that the versicolor and virginica, even if it appears that the other 2 species have more. Versicolor and virginica have more spread between max and min.
+
+
+
+## lets create a new data object with length and width as variables:
+```{r}
+iris$Flower <- 1:nrow(iris)
+
+#create wide_iris
+wide_iris <- iris %>%
+  gather(key, value, -Species, -Flower) %>%
+  separate(key, c("Part", "Measure"),sep = "\\.") %>%
+  spread(Measure, value)
+```
+```{r}
+head(wide_iris, n = 10)
+```
+
+Now lets investigate the relashionship between lenght and width by species. Lets fit a non-predictive and a predictive linear model to analyze the relashionship and see if the linear model do a good job at fitting the data and describe the lenght.
+
+```{r}
+q <- ggplot(wide_iris, aes(x = Width, y = Length, col = Species))
+q + geom_jitter(alpha = 0.4, size = 0.8) + facet_grid(. ~ Species) + 
+  stat_smooth(method = 'lm', se = F)
+```
+```{r}
+q + geom_jitter(alpha = 0.4, size = 0.8) + facet_grid(. ~ Part)
+```
+
+```{r}
+q + geom_point(alpha = 0.4, size = 0.8)  + stat_smooth(method = 'lm', fullrange = T, size = 0.5)
+```
+
+<h1>Conclusion</h1>
+Student dots:
+In this project i was able to apply some skills that ive acquired through the class, and learned something outside the class like shiny apps(yes, shinny apps makes R ready for the future). Ive tryed to create a good project based on iris dataset (since we was able to use any dataset on the links provided), which showed very interesting for me, since i was able to work with boxplot and understand better how it works (since its more oriented to biostatistics, i guess). I can see data data science are awesome, but is not a easy task. I see that the content are great, but theres a lot to learn in order to be a professional (yes, we are very far). Theres a lot of concepts that now i understand much better than the beggining, but theres a long path that i will follow in order to master my skills on the subject. Im very happy with the results, since for a begginner class, ive learned a lot.
+
+About the project:
+
+On this project ive used every tool that i was able to put on practice, in order to create a good report on data science related to the Iris dataset. I tryed to explore plots(graphics) at the maximum that i could. At the beginning i used the "raw" data and explored with plots, them ive used our sugar (%>%) from tidyverse library to format the library and plot some more precise graphics on each species making possible to visualize better; since at start all was about lenght and widht.
+
+
+My conclusion, after this plots are:
+
+Setosa’s petal & sepal length are the shortest of the 3 species, their petals are the narrowest compared to the other 2 species but notice how their sepal is the widest of the 3. Versicolor and Virginica are similar in  length and width properties. Setosa has less petals but notice something interesting on his sepals, which shows more sepals that the versicolor and virginica, even if it appears that the other 2 species have more. Versicolor and virginica have more spread between max and min.
+
+thanks to Mr. Rafael Irizzary to show the R path, which now i think that is better than python, i hope to have more classes or a part 2 of the harvard data science course on edx.
+

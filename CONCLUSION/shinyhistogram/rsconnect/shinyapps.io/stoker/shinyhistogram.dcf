@@ -1,0 +1,12 @@
+name: shinyhistogram
+title: shinyhistogram
+username:
+account: stoker
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 972306
+bundleId: 2139997
+url: https://stoker.shinyapps.io/shinyhistogram/
+when: 1560032080.44198
+asMultiple: FALSE
+asStatic: FALSE

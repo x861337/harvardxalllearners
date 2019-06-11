@@ -1,0 +1,172 @@
+index
+========================================================
+author: 
+date: 
+autosize: true
+
+First Slide
+========================================================
+
+For more details on authoring R presentations please visit <https://support.rstudio.com/hc/en-us/articles/200486468>.
+
+- Bullet 1
+- Bullet 2
+- Bullet 3
+
+Slide With Code
+========================================================
+
+```{r}
+library(tidyverse)
+library(neuralnet)
+library(beanplot)
+library(MASS)
+library(shiny)
+library(dplyr)
+library(klaR)
+
+
+# define the filename
+filename <- "data-raw/iris.csv"
+# load the CSV file from the local directory
+dataset <- read.csv(filename, header=FALSE)
+# set the column names in the dataset
+colnames(dataset) <- c("Sepal.Length","Sepal.Width","Petal.Length","Petal.Width","Species")
+str(dataset)
+head(iris)
+head(iris)
+
+## Iris - Neural Network
+##
+iris$setosa <- iris$Species=="setosa"
+iris$virginica <- iris$Species == "virginica"
+iris$versicolor <- iris$Species == "versicolor"
+iris.train.idx <- sample(x = nrow(iris), size = nrow(iris)*0.5)
+iris.train <- iris[iris.train.idx,]
+iris.valid <- iris[-iris.train.idx,]
+
+
+iris.net <- neuralnet(setosa+versicolor+virginica ~ 
+                        Sepal.Length + Sepal.Width + Petal.Length + Petal.Width, 
+                      data=iris.train, hidden=c(10,10), rep = 5, err.fct = "ce", 
+                      linear.output = F, lifesign = "minimal", stepmax = 1000000,
+                      threshold = 0.001)
+
+plot(iris.net, rep="best")
+
+iris.prediction <- compute(iris.net, iris.valid[-5:-8])
+idx <- apply(iris.prediction$net.result, 1, which.max)
+predicted <- c('setosa', 'versicolor', 'virginica')[idx]
+table(predicted, iris.valid$Species)
+
+
+# Create a list of 80% of the rows in the original dataset we can use for training
+validation_index<-createDataPartition(dataset$Species, p =0.80, list = FALSE)
+
+# Select 20% of the data for validation
+validation<-dataset[-validation_index, ]
+
+# Use the remaining 80% of data to train and test the models
+dataset<-dataset[validation_index, ]
+
+# dimensions of dataset
+dim(dataset)
+
+
+# list the levels for the class
+levels(dataset$Species)
+
+
+# list types for each attribute
+sapply(dataset, class)
+
+head(dataset)
+
+# list the levels for the class
+levels(dataset$Species)
+
+# summarize the class distribution
+percentage <- prop.table(table(dataset$Species)) * 100
+cbind(freq=table(dataset$Species), percentage=percentage)
+
+summary(dataset)
+
+
+# split input and output
+x <- dataset[,1:4]
+y <- dataset[,5]
+plot(y)
+
+# Barplot of class breakdown
+library(dplyr)
+library(ggplot2)
+
+dataset %>% ggplot(aes(x= y)) + geom_bar() +labs(x = "iris.train")
+
+
+
+str(iris)
+
+# Get first 5 rows of each subset
+subset(iris, Species == "setosa")[1:5,]
+
+subset(iris, Species == "versicolor")[1:5,]
+
+subset(iris, Species == "virginica")[1:5,]
+
+# Get column "Species" for all lines where Petal.Length < 2
+subset(iris, Petal.Length < 2)[,"Species"]
+
+summary(iris)
+
+par(mar=c(7,5,1,1)) # more space to labels
+boxplot(iris,las=2)
+
+irisVer <- subset(iris, Species == "versicolor")
+irisSet <- subset(iris, Species == "setosa")
+irisVir <- subset(iris, Species == "virginica")
+par(mfrow=c(1,3),mar=c(6,3,2,1))
+boxplot(irisVer[,1:4], main="Versicolor",ylim = c(0,8),las=2)
+boxplot(irisSet[,1:4], main="Setosa",ylim = c(0,8),las=2)
+boxplot(irisVir[,1:4], main="Virginica",ylim = c(0,8),las=2)
+
+hist(iris$Petal.Length)
+
+
+par(mfrow=c(1,3))
+hist(irisVer$Petal.Length,breaks=seq(0,8,l=17),xlim=c(0,8),ylim=c(0,40))
+hist(irisSet$Petal.Length,breaks=seq(0,8,l=17),xlim=c(0,8),ylim=c(0,40))
+hist(irisVir$Petal.Length,breaks=seq(0,8,l=17),xlim=c(0,8),ylim=c(0,40))
+
+
+pairs(iris[,1:4])
+
+pairs(iris[,1:4],col=iris[,5],oma=c(4,4,6,12))
+par(xpd=TRUE)
+legend(0.85,0.6, as.vector(unique(iris$Species)),fill=c(1,2,3))
+
+
+parcoord(iris[,1:4], col=iris[,5],var.label=TRUE,oma=c(4,4,6,12))
+par(xpd=TRUE)
+legend(0.85,0.6, as.vector(unique(iris$Species)),fill=c(1,2,3))
+
+
+plot(iris$Petal.Length, iris$Petal.Width, main="Edgar Anderson's Iris Data")
+
+plot(iris$Petal.Length, iris$Petal.Width, pch=21, bg=c("red","green3","blue")[unclass(iris$Species)], main="Edgar Anderson's Iris Data")
+
+
+
+
+#######################
+
+
+
+```
+
+Slide With Plot
+========================================================
+
+```{r, echo=FALSE}
+plot(cars)
+```

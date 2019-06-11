@@ -1,0 +1,12 @@
+name: globalirisplot
+title: globalirisplot
+username:
+account: stoker
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 972394
+bundleId: 2140132
+url: https://stoker.shinyapps.io/globalirisplot/
+when: 1560041281.90301
+asMultiple: FALSE
+asStatic: FALSE
